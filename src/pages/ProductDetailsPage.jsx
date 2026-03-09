@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { getProductById } from "../features/products/services/productService";
 import useCartStore from "../features/cart/hooks/useCartStore";
 import useWishlistStore from "../features/wishlist/hooks/useWishlistStore";
+import { useCompareStore } from "../features/compare/hooks/useCompareStore";
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
@@ -13,11 +14,27 @@ export default function ProductDetailsPage() {
   const addToWishlist = useWishlistStore((s) => s.addToWishlist);
   const removeFromWishlist = useWishlistStore((s) => s.removeFromWishlist);
   const isInWishlist = useWishlistStore((s) => s.isInWishlist(Number(id)));
+  // Get comparison state and actions from the store , selectedProductA & selectedProductB store the two products being compared
+  // selectProduct adds a product to comparison , disSelectProduct removes a product from comparison
+  const selectedProductA = useCompareStore((s) => s.selectedProductA);
+  const selectedProductB = useCompareStore((s) => s.selectedProductB);
+  const selectProduct = useCompareStore((s) => s.selectProduct);
+  const disSelectProduct = useCompareStore((s) => s.disSelectProduct);
+  // Check if the current product is already selected for comparison
+  const isSelected = id === selectedProductA || id === selectedProductB;
   const toggleWish = () => {
     if (isInWishlist) {
       removeFromWishlist(Number(id));
     } else {
       addToWishlist(product);
+    }
+  };
+  // Handles adding/removing the product from the comparison list
+  const toggleCompare = () => {
+    if (isSelected) {
+      disSelectProduct(Number(id));
+    } else {
+      selectProduct(Number(id));
     }
   };
   useEffect(() => {
@@ -215,7 +232,7 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 mt-auto">
+          <div className="flex gap-3 mt-auto flex-wrap">
             <button
               onClick={() => addToCart(product)}
               disabled={product.stock === 0}
@@ -237,6 +254,25 @@ export default function ProductDetailsPage() {
                   d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
                   clipRule="evenodd"
                 />
+              </svg>
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                toggleCompare();
+              }}
+              className={`px-4 py-3.5 rounded-xl border-2  transition-all duration-200 ${
+                isSelected
+                  ? "border-primary-500 bg-accent-50 text-primary-500"
+                  : "border-gray-200 text-gray-400 hover:border-accent-300 hover:text-primary-500"
+              }`}
+            >
+              <svg
+                className="w-4 h-4 fill-current"
+                viewBox="0 0 512 512"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M500.609,322.275l-57.428-162.834c0.135,0.008,0.279,0.025,0.406,0.025c39.538,0.677,49.422-20.58,54.566-27.94c7.118-10.171-7.91-20.343-15.816-13.558c-7.906,6.775-29.264,21.011-70.386,2.024C374.874,102.875,309.87,73.098,271.92,67.399v-39c0-8.799-7.127-15.921-15.918-15.921c-8.795,0-15.922,7.122-15.922,15.921v39c-37.95,5.699-102.953,35.476-140.031,52.593c-41.121,18.987-62.48,4.751-70.386-2.024c-7.906-6.784-22.935,3.388-15.816,13.558c5.145,7.36,15.028,28.617,54.566,27.94c0.132,0,0.276-0.017,0.402-0.025L11.391,322.275H0c11.497,38.025,46.804,65.736,88.595,65.736c41.786,0,77.093-27.711,88.59-65.736h-11.386l-60.355-171.134c37.183-11.467,89.569-31.056,134.636-34.072v24.23h-8.507v267.748H218.37v23.858c-8.715,0-17.569,0-24.874,0c-23.354,0-22.663,32.969-22.663,32.969c-19.233,0-28.85,15.101-28.85,33.648h228.033c0-18.546-9.616-33.648-28.845-33.648c0,0,0.686-32.969-22.668-32.969c-7.305,0-16.159,0-24.874,0v-23.858h-13.203V141.3h-8.507v-24.23c45.072,3.015,97.457,22.604,134.64,34.072l-60.358,171.134h-11.387c11.496,38.025,46.804,65.736,88.59,65.736c41.79,0,77.098-27.711,88.594-65.736H500.609z M141.243,322.275H35.948L88.595,173L141.243,322.275z M370.758,322.275L423.41,173l52.643,149.275H370.758z" />
               </svg>
             </button>
           </div>
