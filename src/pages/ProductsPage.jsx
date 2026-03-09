@@ -1,32 +1,96 @@
 import { useState, useEffect } from "react";
-import { getCategories } from "../features/products/services/productService";
+import {
+  getCategories,
+  filterProducts,
+} from "../features/products/services/productService";
 import ProductCard from "../features/products/components/ProductCard";
-import { filterProducts } from "../features/products/services/productService";
+import { useSearchParams } from "react-router";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [searchParams, setSearchParams] = useSearchParams();
   // Basic state — not wired to filterProducts yet (student task)
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [sortBy, setSortBy] = useState("title");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get("category") || "",
+  );
+  const [sortBy, setSortBy] = useState(searchParams.get("sortBy") || "title");
+  const [sortOrder, setSortOrder] = useState(
+    searchParams.get("sortOrder") || "asc",
+  );
+  const [currentPage, setCurrentPage] = useState(searchParams.get("page") || 1);
   const productsPerPage = 8;
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  console.log(sortBy, sortOrder);
+  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
+  //Ensures the component updates if the user navigates back/forward and validate url parameters
+  useEffect(() => {
+    const search = searchParams.get("search") || "";
+    setSearch(search);
+    setDebouncedSearch(search);
+
+    const categoryParam = searchParams.get("category") || "";
+    setSelectedCategory(
+      categories.includes(categoryParam) ? categoryParam : "",
+    );
+
+    const sortByParam = searchParams.get("sortBy") || "title";
+    const sortOrderParam = searchParams.get("sortOrder") || "asc";
+    setSortBy(
+      ["title", "price", "rating"].includes(sortByParam)
+        ? sortByParam
+        : "title",
+    );
+    setSortOrder(
+      ["asc", "desc"].includes(sortOrderParam) ? sortOrderParam : "asc",
+    );
+
+    let page = Number(searchParams.get("page")) || 1;
+    if (page < 1) page = 1;
+    if (totalPages && page > totalPages) page = totalPages;
+    setCurrentPage(page);
+
+    setMinPrice(searchParams.get("minPrice") || "");
+    setMaxPrice(searchParams.get("maxPrice") || "");
+  }, [searchParams, categories, totalPages]);
+
+  // Update URL whenever filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (search.trim()) params.set("search", search);
+    if (selectedCategory) params.set("category", selectedCategory);
+    if (sortBy !== "title" || sortOrder !== "asc") {
+      params.set("sortBy", sortBy);
+      params.set("sortOrder", sortOrder);
+    }
+    if (minPrice) params.set("minPrice", minPrice);
+    if (maxPrice) params.set("maxPrice", maxPrice);
+    if (currentPage > 1) params.set("page", currentPage);
+
+    setSearchParams(params, { replace: true });
+  }, [
+    search,
+    selectedCategory,
+    sortBy,
+    sortOrder,
+    minPrice,
+    maxPrice,
+    currentPage,
+    setSearchParams,
+  ]);
+  //debouncing search to avoid sending many requests
   useEffect(() => {
     const debounce = setTimeout(() => {
       setDebouncedSearch(search);
     }, 500);
     return () => clearTimeout(debounce);
   }, [search]);
+
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -60,7 +124,16 @@ export default function ProductsPage() {
     minPrice,
     maxPrice,
   ]);
-
+  //clear filterations by setting it to its default values
+  //   function clearFilteraions() {
+  //     setSearch("");
+  //     setSortBy("");
+  //     setSortOrder("");
+  //     setCurrentPage(1);
+  //     setSelectedCategory("");
+  //     setMinPrice("");
+  //     setMaxPrice("");
+  //   }
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -199,7 +272,10 @@ export default function ProductsPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
               <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                onClick={() => {
+                  const newPage = Math.max(1, Number(currentPage) - 1);
+                  setCurrentPage(newPage);
+                }}
                 disabled={currentPage === 1}
                 className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
@@ -209,7 +285,9 @@ export default function ProductsPage() {
                 (pageNum) => (
                   <button
                     key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
+                    onClick={() => {
+                      setCurrentPage(pageNum);
+                    }}
                     className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
                       currentPage === pageNum
                         ? "bg-primary-600 text-white"
@@ -221,9 +299,10 @@ export default function ProductsPage() {
                 ),
               )}
               <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
+                onClick={() => {
+                  const newPage = Math.min(totalPages, Number(currentPage) + 1);
+                  setCurrentPage(newPage);
+                }}
                 disabled={currentPage === totalPages}
                 className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
