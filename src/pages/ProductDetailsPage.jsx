@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getProductById } from "../features/products/services/productService";
+import {
+  getProductById,
+  getReviewsByProductId,
+} from "../features/products/services/productService";
 import useCartStore from "../features/cart/hooks/useCartStore";
 import useWishlistStore from "../features/wishlist/hooks/useWishlistStore";
 import { useCompareStore } from "../features/compare/hooks/useCompareStore";
+import ReviewCard from "../features/products/components/ReviewCard";
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(null);
   const addToCart = useCartStore((s) => s.addToCart);
@@ -21,7 +27,8 @@ export default function ProductDetailsPage() {
   const selectProduct = useCompareStore((s) => s.selectProduct);
   const disSelectProduct = useCompareStore((s) => s.disSelectProduct);
   // Check if the current product is already selected for comparison
-  const isSelected = id === selectedProductA || id === selectedProductB;
+  const isSelected =
+    Number(id) === selectedProductA || Number(id) === selectedProductB;
   const toggleWish = () => {
     if (isInWishlist) {
       removeFromWishlist(Number(id));
@@ -37,10 +44,23 @@ export default function ProductDetailsPage() {
       selectProduct(Number(id));
     }
   };
+
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+      : 0;
+  const sortedReviews = [...reviews].sort(
+    (a, b) => new Date(b.date) - new Date(a.date),
+  );
+  const displayedReviews = showAllReviews
+    ? sortedReviews
+    : sortedReviews.slice(0, 5);
   useEffect(() => {
     async function load() {
       setLoading(true);
       const p = await getProductById(id);
+      const r = await getReviewsByProductId(id);
+      setReviews(r);
       setProduct(p);
       setLoading(false);
     }
@@ -100,7 +120,6 @@ export default function ProductDetailsPage() {
     }
     return stars;
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -149,7 +168,7 @@ export default function ProductDetailsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Image */}
-        <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-3xl overflow-hidden border max-h-max border-gray-100 shadow-sm">
           <img
             src={product.thumbnail}
             alt={product.title}
@@ -277,17 +296,49 @@ export default function ProductDetailsPage() {
             </button>
           </div>
 
-          {/* Reviews Placeholder — Student task to implement */}
-          <div className="mt-10 border-t border-gray-100 pt-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
+          {/* Reviews Section */}
+          <section className="mt-12 bg-white border border-gray-100 shadow-sm rounded-3xl p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Customer Reviews
-            </h3>
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <p className="text-gray-400 text-sm">
-                Reviews will be displayed here.
+            </h2>
+            {reviews.length > 0 ? (
+              <>
+                {/* Reviews Summary */}
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="text-4xl font-bold text-gray-900">
+                    {averageRating.toFixed(1)}
+                  </div>
+
+                  <div>
+                    <div className="flex">{renderStars(averageRating)}</div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Based on {reviews.length} review
+                      {reviews.length !== 1 && "s"}
+                    </p>
+                  </div>
+                  {reviews.length > 5 && (
+                    <button
+                      className={`${showAllReviews ? "text-red-700" : "text-primary-600"} text-sm mt-4 ml-auto hover:font-semibold hover:cursor-pointer`}
+                      onClick={() => setShowAllReviews((p) => !p)}
+                    >
+                      Show {showAllReviews ? "less" : "all reviews"}
+                    </button>
+                  )}
+                </div>
+                {/* Reviews List */}
+                <div className="flex gap-4 flex-col max-h-72 overflow-y-auto">
+                  {displayedReviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              /* Reviews List Empty */
+              <p className="text-center text-md text-gray-400">
+                No reviews yet
               </p>
-            </div>
-          </div>
+            )}
+          </section>
         </div>
       </div>
     </div>
