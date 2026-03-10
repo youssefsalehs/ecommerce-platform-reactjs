@@ -74,7 +74,7 @@ export const useCompareStore = create(
       clearSelection: () => set({ selectedProductA: "", selectedProductB: "" }),
     }),
     {
-      name: "compare",
+      name: "compare-storage",
       storage: createJSONStorage(() => localStorage),
     },
   ),

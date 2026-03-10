@@ -48,7 +48,7 @@ export default function ComparePage() {
   };
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-8 flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Compare Products</h1>
           <p className="text-gray-500 mt-1">
@@ -57,9 +57,9 @@ export default function ComparePage() {
         </div>
         <button
           onClick={() => clearSelection()}
-          className="px-3 py-1.5 bg-primary-600 text-white cursor-pointer font-medium rounded-lg hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className=" text-red-600  cursor-pointer text-sm font-medium rounded-lg hover:text-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          Clear
+          Clear Comparasion
         </button>
       </div>
 

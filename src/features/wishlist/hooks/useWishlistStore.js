@@ -26,7 +26,7 @@ const useWishlistStore = create(
       },
     }),
     {
-      name: "wishlist",
+      name: "wishlist-storage",
       storage: createJSONStorage(() => localStorage),
     },
   ),
