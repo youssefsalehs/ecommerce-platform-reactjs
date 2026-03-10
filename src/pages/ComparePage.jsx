@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getProducts } from "../features/products/services/productService";
 import { useCompareStore } from "../features/compare/hooks/useCompareStore";
+import toast from "react-hot-toast";
 
 export default function ComparePage() {
   const [products, setProducts] = useState([]);
@@ -56,7 +57,13 @@ export default function ComparePage() {
           </p>
         </div>
         <button
-          onClick={() => clearSelection()}
+          onClick={() => {
+            clearSelection();
+            toast(`Comparasion is cleared`, {
+              icon: "🗑️",
+              style: { background: "#df8b17", color: "#ffffff" },
+            });
+          }}
           className=" text-red-600  cursor-pointer text-sm font-medium rounded-lg hover:text-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           Clear Comparasion

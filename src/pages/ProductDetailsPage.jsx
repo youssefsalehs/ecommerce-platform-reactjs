@@ -8,6 +8,7 @@ import useCartStore from "../features/cart/hooks/useCartStore";
 import useWishlistStore from "../features/wishlist/hooks/useWishlistStore";
 import { useCompareStore } from "../features/compare/hooks/useCompareStore";
 import ReviewCard from "../features/products/components/ReviewCard";
+import toast from "react-hot-toast";
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
@@ -32,16 +33,26 @@ export default function ProductDetailsPage() {
   const toggleWish = () => {
     if (isInWishlist) {
       removeFromWishlist(Number(id));
+      toast(`${product.title} is removed from wishlist`, {
+        icon: "🗑️",
+        style: { background: "#df8b17", color: "#ffffff" },
+      });
     } else {
       addToWishlist(product);
+      toast.success(`${product.title} is added to wishlist`);
     }
   };
   // Handles adding/removing the product from the comparison list
   const toggleCompare = () => {
     if (isSelected) {
       disSelectProduct(Number(id));
+      toast(`${product.title} is removed from comparasion`, {
+        icon: "🗑️",
+        style: { background: "#df8b17", color: "#ffffff" },
+      });
     } else {
       selectProduct(Number(id));
+      toast.success(`${product.title} is added to comparasion`);
     }
   };
 
@@ -253,7 +264,10 @@ export default function ProductDetailsPage() {
           {/* Actions */}
           <div className="flex gap-3 mt-auto flex-wrap">
             <button
-              onClick={() => addToCart(product)}
+              onClick={() => {
+                addToCart(product);
+                toast.success(`${product.title} is added to cart`);
+              }}
               disabled={product.stock === 0}
               className="flex-1 px-6 py-3.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >

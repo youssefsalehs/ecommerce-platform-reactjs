@@ -7,10 +7,32 @@ import CartPage from "./pages/CartPage";
 import WishlistPage from "./pages/WishlistPage";
 import ComparePage from "./pages/ComparePage";
 import CheckoutPage from "./pages/CheckoutPage";
-
+import { Toaster } from "react-hot-toast";
 export default function App() {
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 5000,
+
+          style: {
+            background: "#065095",
+            color: "#fff",
+          },
+          success: {
+            duration: 3000,
+            style: {
+              background: "#09a209",
+              color: "#fff",
+            },
+            iconTheme: {
+              primary: "white",
+              secondary: "black",
+            },
+          },
+        }}
+      />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />

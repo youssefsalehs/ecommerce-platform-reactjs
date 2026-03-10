@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import useWishlistStore from "../features/wishlist/hooks/useWishlistStore";
 import useCartStore from "../features/cart/hooks/useCartStore";
+import toast from "react-hot-toast";
 
 export default function WishlistPage() {
   const items = useWishlistStore((s) => s.items);
@@ -79,13 +80,20 @@ export default function WishlistPage() {
                   onClick={() => {
                     addToCart(item);
                     removeFromWishlist(item.id);
+                    toast(`${item.title} is moved to cart`, {
+                      icon: "🗑️",
+                      style: { background: "#df8b17", color: "#ffffff" },
+                    });
                   }}
                   className="flex-1 py-2 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors"
                 >
                   Move to Cart
                 </button>
                 <button
-                  onClick={() => removeFromWishlist(item.id)}
+                  onClick={() => {
+                    removeFromWishlist(item.id);
+                    toast(`${item.title} is removed from wishlist`);
+                  }}
                   className="px-3 py-2 border border-gray-200 rounded-lg text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
                 >
                   <svg

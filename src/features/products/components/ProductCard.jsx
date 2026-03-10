@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import useCartStore from "../../cart/hooks/useCartStore";
 import useWishlistStore from "../../wishlist/hooks/useWishlistStore";
 import { useCompareStore } from "../../compare/hooks/useCompareStore";
+import toast from "react-hot-toast";
 
 export default function ProductCard({ product }) {
   const addToCart = useCartStore((s) => s.addToCart);
@@ -18,15 +19,25 @@ export default function ProductCard({ product }) {
   const toggleWish = () => {
     if (isInWishlist) {
       removeFromWishlist(product.id);
+      toast(`${product.title} is removed from wishlist`, {
+        icon: "🗑️",
+        style: { background: "#df8b17", color: "#ffffff" },
+      });
     } else {
       addToWishlist(product);
+      toast.success(`${product.title} is added to wishlist`);
     }
   };
   const toggleCompare = () => {
     if (isSelected) {
       disSelectProduct(product.id);
+      toast(`${product.title} is removed from comparasion`, {
+        icon: "🗑️",
+        style: { background: "#df8b17", color: "#ffffff" },
+      });
     } else {
       selectProduct(product.id);
+      toast.success(`${product.title} is added to comparasion`);
     }
   };
   const renderStars = (rating) => {
@@ -161,7 +172,10 @@ export default function ProductCard({ product }) {
             ${product.price.toFixed(2)}
           </span>
           <button
-            onClick={() => addToCart(product)}
+            onClick={() => {
+              addToCart(product);
+              toast.success(`${product.title} is added to cart`);
+            }}
             disabled={product.stock === 0}
             className="px-3 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
